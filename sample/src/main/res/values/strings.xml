@@ -7,4 +7,14 @@
     <string name="is_location_mock_label">Is Location Mock:</string>
     <string name="are_mock_location_apps_present_label">Are Mock Location Apps Present:</string>
     <string name="is_allow_mock_locations_on_label">Is Allow Mock Locations On:</string>
+    <string name="mock_simulator_label">Mock location simulator</string>
+    <string name="mock_latitude_hint">Latitude</string>
+    <string name="mock_longitude_hint">Longitude</string>
+    <string name="mock_preset_nttu">Nguyen Tat Thanh University</string>
+    <string name="mock_start">Start mock</string>
+    <string name="mock_stop">Stop mock</string>
+    <string name="mock_status_idle">Mock: stopped</string>
+    <string name="mock_status_running">Mock: running at %1$s, %2$s</string>
+    <string name="mock_invalid_coordinates">Invalid coordinates</string>
+    <string name="mock_not_allowed">Not allowed. Select this app in Developer options &gt; Select mock location app.</string>
 </resources>

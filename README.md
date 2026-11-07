@@ -29,6 +29,19 @@ false.
 # Sample
 You can run the sample to test the library
 
+## Mock location simulator
+The sample can also simulate a location so you can check that the detector flags it.
+The coordinates default to Nguyen Tat Thanh University (10.7610342, 106.7103536); you can type any other values.
+
+1. Install the sample on the phone.
+2. Developer options > Select mock location app > choose "Mock Location Detector Sample".
+3. Open the sample, check the coordinates (or tap "Nguyen Tat Thanh University") and tap "Start mock".
+4. "Is Location Mock" should turn `true` within a few seconds. Tap "Stop mock" to end the simulation.
+
+The simulator pushes the location every second to the GPS test provider and to the fused location provider.
+
+With adb (an emulator only): `adb emu geo fix 106.7103536 10.7610342` (longitude first).
+
 # License
     Copyright 2016 Stéphane Marques
 

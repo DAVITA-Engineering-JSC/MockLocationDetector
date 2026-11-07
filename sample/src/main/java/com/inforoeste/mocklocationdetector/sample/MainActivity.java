@@ -5,7 +5,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -31,6 +35,16 @@ public class MainActivity extends AppCompatActivity implements
     private TextView mIsMockLocationsOnTextView;
     private LocationRequest mLocationRequest;
 
+    // Nguyen Tat Thanh University (coordinates provided by DAVITA)
+    private static final double NTTU_LATITUDE = 10.7610342;
+    private static final double NTTU_LONGITUDE = 106.7103536;
+
+    private MockLocationSimulator mMockLocationSimulator;
+    private EditText mMockLatitudeEditText;
+    private EditText mMockLongitudeEditText;
+    private Button mMockToggleButton;
+    private TextView mMockStatusTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +65,80 @@ public class MainActivity extends AppCompatActivity implements
                     .addApi(LocationServices.API)
                     .build();
         }
+
+        setupMockSimulator();
+    }
+
+    private void setupMockSimulator() {
+        mMockLocationSimulator = new MockLocationSimulator(this, mGoogleApiClient);
+        mMockLatitudeEditText = (EditText) findViewById(R.id.edt_mock_latitude);
+        mMockLongitudeEditText = (EditText) findViewById(R.id.edt_mock_longitude);
+        mMockToggleButton = (Button) findViewById(R.id.btn_mock_toggle);
+        mMockStatusTextView = (TextView) findViewById(R.id.txt_mock_status);
+        fillNttuCoordinates();
+
+        findViewById(R.id.btn_mock_preset_nttu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fillNttuCoordinates();
+            }
+        });
+        mMockToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mMockLocationSimulator.isRunning()) {
+                    mMockLocationSimulator.stop();
+                } else {
+                    startMock();
+                }
+                updateMockUI();
+            }
+        });
+    }
+
+    private void fillNttuCoordinates() {
+        mMockLatitudeEditText.setText(String.valueOf(NTTU_LATITUDE));
+        mMockLongitudeEditText.setText(String.valueOf(NTTU_LONGITUDE));
+    }
+
+    private void startMock() {
+        double latitude;
+        double longitude;
+        try {
+            latitude = Double.parseDouble(mMockLatitudeEditText.getText().toString().trim());
+            longitude = Double.parseDouble(mMockLongitudeEditText.getText().toString().trim());
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, R.string.mock_invalid_coordinates, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            Toast.makeText(this, R.string.mock_invalid_coordinates, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            mMockLocationSimulator.start(latitude, longitude);
+        } catch (SecurityException e) {
+            mMockLocationSimulator.stop();
+            Toast.makeText(this, R.string.mock_not_allowed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void updateMockUI() {
+        if (mMockLocationSimulator.isRunning()) {
+            mMockToggleButton.setText(R.string.mock_stop);
+            mMockStatusTextView.setText(getString(R.string.mock_status_running,
+                    mMockLatitudeEditText.getText().toString().trim(),
+                    mMockLongitudeEditText.getText().toString().trim()));
+        } else {
+            mMockToggleButton.setText(R.string.mock_start);
+            mMockStatusTextView.setText(R.string.mock_status_idle);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mMockLocationSimulator.stop();
+        super.onDestroy();
     }
 
     protected void onStart() {
@@ -71,6 +159,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(Bundle connectionHint) {
+        try {
+            mMockLocationSimulator.onGoogleApiConnected();
+        } catch (SecurityException e) {
+            mMockLocationSimulator.stop();
+            updateMockUI();
+        }
         createLocationRequest();
         startLocationUpdates();
     }
